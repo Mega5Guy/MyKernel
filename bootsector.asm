@@ -2,37 +2,29 @@ bits 16 ; set bitness to 16(16 bit real mode)
 org 0x7C00 ;Loads boot section to mem addr, org says pretend this code starts at 0x7C00 when calculating addrs
 ; does not generate anything, just info for assembler
 
-mov ah, 0x0E ; upper half of AX set to 0xE0
+
+mov ah, 0x0E ; upper half of AX set to 0xE0; The BIOS teletype function
 mov al, 'H' ; set lower half of AX to 'H'
 int 0x10 ; ah sets the command, 0xE0, which is print 1 charater, which uses AL(In ASCII)
-; int 0x10 is the BIOS video interrupt. Kind oflike if you thought of a function that does bios_print_character('H'),
-;but instead of a function, its more like int0x10(i0x10.print_char) //with i0x10 being a enum
+; int 0x10 is the BIOS video interrupt. Kind oflike if you thought of a function that does bios_function(0xE0, 'H'),
+;but instead of a function, its more like int0x10(i0x10.print_char, byte 'H') //with i0x10 being a enum
 
-;painfully write the rest of the word hello
-mov al, 'e'
-int 0x10
-mov al, 'l'
-int 0x10
-mov al, 'l'
-int 0x10
-mov al, 'o'
-int 0x10
 
-mov al, 0x20 ;Hexadeciaml for ASCII space
-int 0x10
-;world
-mov al, 'W'
-int 0x10
-mov al, 'o'
-int 0x10
-mov al, 'r'
-int 0x10
-mov al, 'l'
-int 0x10
-mov al, 'd'
-int 0x10
-mov al, '!'
-int 0x10
+;print the rest of "Hello world!"
+helloworld db "ello World!", 0
+mov si, helloworld
+
+.print_helloworld:
+    lodsb ;AL = [SI], SI++
+    test al, al ;Is it 0?
+    jz .print_helloworld_done
+
+    int 0x10
+    jmp .print_helloworld
+
+.print_helloworld_done:
+
+
 
 jmp $ ;jumps to current address,
 ;Without this, the CPU would continue executing whatever bytes come after your code. like while(1){}
